@@ -26,10 +26,8 @@ function LoginForm(props) {
   };
 
   return (
-    <Row className="vh-100 justify-content-md-center">
-    <Col md={4} >
-    <h1 className="pb-3">Login</h1>
-
+    <Row className="below-nav vh-100 d-flex justify-content-center">
+      <h1>Login</h1>
       <Form  onSubmit={handleSubmit}>
           <Alert
             dismissible
@@ -58,22 +56,21 @@ function LoginForm(props) {
           </Form.Group>
           <Button className="mt-3" type="submit">Login</Button>
       </Form>
-      </Col>
-      </Row>
+    </Row>
 
   )
 };
 
 function LogoutButton(props) {
   return (
-    <Button variant="outline-light">Logout</Button>
+    <Button variant="outline-light" onClick={props.logout}>Logout</Button>
   )
 }
 
 function LoginButton(props) {
-  //const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
-    <Button variant="outline-light">Login</Button>
+    <Button variant="outline-light" onClick={()=> navigate('/login')}>Login</Button>
   )
 }
 

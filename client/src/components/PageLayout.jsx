@@ -10,9 +10,7 @@ function DefaultLayout(props) {
   
   return (
     <Row className="vh-100">
-      <Col md={8} xl={9} className="below-nav">
-        <Outlet/>
-      </Col>
+       <Outlet/>
     </Row>
   );
 }
@@ -52,10 +50,8 @@ function LoadingLayout(props) {
 
 function LoginLayout(props) {
   return (
-    <Row className="vh-100">
-      <Col md={12} className="below-nav">
-        <LoginForm login={props.login} />
-      </Col>
+    <Row>
+      <LoginForm login={props.login} />
     </Row>
   );
 }

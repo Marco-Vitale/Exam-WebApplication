@@ -21,8 +21,11 @@ const Navigation = (props) => {
         </Link>
         
         <Nav className="ml-md-auto">
+          <Navbar.Text className="mx-2">
+            {(props.user && props.user.name && props.user.role) ? `Welcome, ${props.user.name}, Role: ${props.user.role}!` : "Welcome anonymous!"}
+          </Navbar.Text>
             <Form className="mx-2">
-                {props.loggedIn ? <LogoutButton/> : <LoginButton/>}
+                {props.loggedIn ? <LogoutButton logout={props.logout}/> : <LoginButton/>}
             </Form>
         </Nav>
     </Navbar>
