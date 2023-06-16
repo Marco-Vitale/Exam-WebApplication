@@ -5,6 +5,7 @@ const morgan = require('morgan');                                  // logging mi
 const cors = require('cors');
 
 const userDao = require('./dao-users'); // module for accessing the user table in the DB
+const pagesDao = require('./dao-pages');
 
 // init express and set-up the middlewares ***/
 const app = new express();
@@ -108,6 +109,21 @@ app.delete('/api/sessions/current', (req, res) => {
     res.status(200).json({});
   });
 });
+
+/*** Pages APIs ***/
+
+// 1. Retrieve the list of all the available pages.
+// GET /api/pages
+
+app.get('/api/pages',
+  (req, res) => {
+    
+    pagesDao.listPages()
+      .then(pages => res.json(pages))
+      .catch((err) => res.status(500).json(err)); // always return a json and an error message
+  }
+);
+
 
 // activate the server
 app.listen(port, () => {

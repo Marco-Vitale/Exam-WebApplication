@@ -2,6 +2,8 @@ import { React, useContext, useState, useEffect } from 'react';
 import { Row, Col, Button, Spinner } from 'react-bootstrap';
 import { Link, useParams, useLocation, Outlet } from 'react-router-dom';
 
+import API from '../API';
+import PagesTable from './PagesList';
 import { LoginForm } from './Auth';
 
 function DefaultLayout(props) {
@@ -9,17 +11,31 @@ function DefaultLayout(props) {
   const location = useLocation();
   
   return (
-    <Row className="vh-100">
+    <Row className="vh-100 below-nav centered">
        <Outlet/>
     </Row>
   );
 }
 
-function MainLayout() {
+function MainLayout(props) {
+
+  useEffect(() => {
+    const getPages = async () => {
+      try{
+      const p = await API.getPages();
+      props.setPages(p)
+      }catch(err){
+        console.log(err)
+      }
+    }
+
+    getPages();
+
+  },[])
 
   return (
     <>
-      <h1 className='centered'>Welcome: Test1</h1> 
+      <PagesTable pages={props.pages} />
     </>
   )
 }
@@ -50,9 +66,9 @@ function LoadingLayout(props) {
 
 function LoginLayout(props) {
   return (
-    <Row>
+    <>
       <LoginForm login={props.login} />
-    </Row>
+    </>
   );
 }
 

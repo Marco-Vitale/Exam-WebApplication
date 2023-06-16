@@ -37,6 +37,8 @@ function App() {
   // This state contains the user's info.
   const [user, setUser] = useState(null);
 
+  const [pages, setPages] = useState([]);
+
   //TODO: MODIFICARE IL CATCH PER LA GESTIONE DI ERRORI
 
   useEffect(() => {
@@ -90,7 +92,7 @@ function App() {
             <Route path="/" element={
             loading ? <LoadingLayout /> : <DefaultLayout />
             } >
-              <Route index element={<MainLayout />} />
+              <Route index element={<MainLayout pages={pages} setPages={setPages} />} />
               <Route path="*" element={<NotFoundLayout />} />
             </Route>
 

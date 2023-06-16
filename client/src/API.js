@@ -71,6 +71,31 @@ const logIn = async (credentials) => {
     })
     )
   }
+
+  /**
+ * Getting from the server side and returning the list of pages.
+ */
+
+const getPages = async () => {
+
+  return getJson(
+      fetch(SERVER_URL + 'pages', { credentials: 'include' })
+  ).then( json => {
+    return json.map((page) => {
+
+      const clientPage = {
+        id: page.id,
+        title: page.title,
+        author: page.author,
+        creationDate: dayjs(page.creationDate)
+      }
+
+      if (page.publicationDate)
+        clientPage.publicationDate = dayjs(page.publicationDate);
+      return clientPage;
+    })
+  })
+}
   
-  const API = {logIn, getUserInfo, logOut};
+  const API = {logIn, getUserInfo, logOut, getPages};
   export default API;
