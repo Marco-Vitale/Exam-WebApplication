@@ -54,7 +54,7 @@ function LoginForm(props) {
               required={true} minLength={6}
             />
           </Form.Group>
-          <Button className="mt-3" type="submit">Login</Button>
+          <Button className="mt-3" variant="success" type="submit">Login</Button>
       </Form>
     </Row>
 

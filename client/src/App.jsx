@@ -92,7 +92,7 @@ function App() {
             <Route path="/" element={
             loading ? <LoadingLayout /> : <DefaultLayout />
             } >
-              <Route index element={<MainLayout pages={pages} setPages={setPages} />} />
+              <Route index element={<MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn}/>} />
               <Route path="*" element={<NotFoundLayout />} />
             </Route>
 

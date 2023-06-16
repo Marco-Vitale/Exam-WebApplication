@@ -35,7 +35,7 @@ function MainLayout(props) {
 
   return (
     <>
-      <PagesTable pages={props.pages} />
+      <PagesTable pages={props.pages} user={props.user} loggedIn={props.loggedIn} />
     </>
   )
 }

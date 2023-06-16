@@ -13,7 +13,7 @@ const Navigation = (props) => {
   }
 
   return (
-    <Navbar bg="primary" variant="light" fixed="top" className="navbar-padding justify-content-between" expand="lg">
+    <Navbar bg="success" variant="dark" fixed="top" className="navbar-padding justify-content-between" expand="lg">
         <Link to="/">
             <Navbar.Brand>
                 CMSmall
