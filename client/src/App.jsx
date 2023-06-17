@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Container} from 'react-bootstrap/'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
-import { MainLayout, DefaultLayout, NotFoundLayout, LoginLayout, LoadingLayout } from './components/PageLayout';
+import { MainLayout, DefaultLayout, NotFoundLayout, LoginLayout, LoadingLayout, AddLayout } from './components/PageLayout';
 import API from './API';
 import './App.css'
 
@@ -38,6 +38,8 @@ function App() {
   const [user, setUser] = useState(null);
 
   const [pages, setPages] = useState([]);
+
+  const [dirty, setDirty] = useState(true);
 
   //TODO: MODIFICARE IL CATCH PER LA GESTIONE DI ERRORI
 
@@ -92,7 +94,9 @@ function App() {
             <Route path="/" element={
             loading ? <LoadingLayout /> : <DefaultLayout />
             } >
-              <Route index element={<MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn}/>} />
+              <Route index element={<MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn} dirty={dirty} setDirty={setDirty}/>} />
+              <Route path="backoffice" element={loggedIn ? <MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn} dirty={dirty} setDirty={setDirty}/> : <Navigate replace to='/login' />} />
+              <Route path="add" element={loggedIn ? <AddLayout setDirty={setDirty} /> : <Navigate replace to='/login' />} />
               <Route path="*" element={<NotFoundLayout />} />
             </Route>
 

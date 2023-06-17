@@ -16,7 +16,11 @@ import { Link, useLocation } from 'react-router-dom';
 */
 
 function PagesTable(props) {
-  
+
+    const location = useLocation();
+
+    const flag = location.pathname === "/"
+
     return (
         <Table striped style={{ tableLayout: 'fixed', width: '100%', height: '85%' }}>
             
@@ -26,13 +30,13 @@ function PagesTable(props) {
                     <th>Author</th>
                     <th>Creation Date</th>
                     <th>Publication Date</th>
-                    <th>Actions</th>
+                    {!flag ? <th>Actions</th> : <></>}
                 </tr>
             </thead>
             <tbody>
             {
                 props.pages.map((page) =>
-                <PageRow key={page.id} pageData={page} user={props.user} loggedIn={props.loggedIn} />)
+                <PageRow key={page.id} pageData={page} user={props.user} loggedIn={props.loggedIn} deletePage={props.deletePage} />)
             }
             </tbody>
         </Table>
@@ -45,9 +49,9 @@ function PagesTable(props) {
       return dayJsDate ? dayJsDate.format(format) : '';
     }
   
-    // location is used to pass state to the edit (or add) view so that we may be able to come back to the last filter view
     const location = useLocation();
-  
+    const flag = location.pathname === "/"
+
     return(
       <tr>
         <td>
@@ -66,6 +70,7 @@ function PagesTable(props) {
         <td>
           <small>{formatWatchDate(props.pageData.publicationDate, 'MMMM D, YYYY')}</small>
         </td>
+          {!flag ? (
           <td>
           {(props.loggedIn && (props.user.role=="Admin" || (props.user.role=="User" && props.pageData.author == props.user.name))) ? (
             <Link className="btn btn-success" to={"/edit/" + props.pageData.id} state={{nextpage: location.pathname}}>
@@ -77,10 +82,10 @@ function PagesTable(props) {
             </span>
             )}
             &nbsp;
-            <Button variant='danger' disabled={!props.loggedIn || (props.user.role=="User" && props.user.name!=props.pageData.author)}>
+            <Button variant='danger' onClick={() => props.deletePage(props.pageData.id)} disabled={!props.loggedIn || (props.user.role=="User" && props.user.name!=props.pageData.author)}>
               <i className="bi bi-trash"/>
             </Button>
-          </td>
+          </td>) : <></>}
       </tr>
     );
   }

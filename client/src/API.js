@@ -76,10 +76,10 @@ const logIn = async (credentials) => {
  * Getting from the server side and returning the list of pages.
  */
 
-const getPages = async () => {
+const getPages = async (filter) => {
 
   return getJson(
-      fetch(SERVER_URL + 'pages', { credentials: 'include' })
+      fetch(SERVER_URL + 'pages?filter=' + filter, { credentials: 'include' })
   ).then( json => {
     return json.map((page) => {
 
@@ -96,6 +96,18 @@ const getPages = async () => {
     })
   })
 }
+
+  /**
+ * This function deletes a film from the back-end library.
+ */
+  function deletePage(pageId) {
+    return getJson(
+      fetch(SERVER_URL + "pages/" + pageId, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+    )
+  }
   
-  const API = {logIn, getUserInfo, logOut, getPages};
+  const API = {logIn, getUserInfo, logOut, getPages, deletePage};
   export default API;

@@ -4,6 +4,7 @@ import { Link, useParams, useLocation, Outlet } from 'react-router-dom';
 
 import API from '../API';
 import PagesTable from './PagesList';
+import PageForm from './PageForm';
 import { LoginForm } from './Auth';
 
 function DefaultLayout(props) {
@@ -19,23 +20,48 @@ function DefaultLayout(props) {
 
 function MainLayout(props) {
 
+  const dirty = props.dirty;
+  const setDirty = props.setDirty;
+
+  const location = useLocation();
+  const flag = location.pathname === "/"
+
+  const filter = flag ? "published" : "all"
+
+  useEffect(() => {
+    setDirty(true);
+  }, [filter])
+
   useEffect(() => {
     const getPages = async () => {
       try{
-      const p = await API.getPages();
+      const p = await API.getPages(filter);
       props.setPages(p)
+      setDirty(false);
+
       }catch(err){
         console.log(err)
+        setDirty(false);
       }
     }
 
-    getPages();
+    if(dirty){
+      getPages();
+    }
 
-  },[])
+  },[dirty,filter])
+
+  const deletePage = (pageId) => {
+    API.deletePage(pageId)
+      .then(() => { setDirty(true); })
+      .catch(e => handleErrors(e)); 
+  }
 
   return (
     <>
-      <PagesTable pages={props.pages} user={props.user} loggedIn={props.loggedIn} />
+      <PagesTable pages={props.pages} user={props.user} loggedIn={props.loggedIn} deletePage={deletePage} />
+      {!flag ?
+      <Link className="btn btn-primary btn-lg fixed-right-bottom" to="/add" state={{nextpage: location.pathname}}> &#43; </Link> : <></>}
     </>
   )
 }
@@ -72,4 +98,20 @@ function LoginLayout(props) {
   );
 }
 
-export { DefaultLayout, NotFoundLayout, MainLayout, LoadingLayout, LoginLayout }; 
+function AddLayout(props) {
+
+  const setDirty = props.setDirty;
+  //const {handleErrors} = useContext(MessageContext);
+
+  // add a page into the list
+  const addPage = (page) => {
+    API.addPage(page)
+      .then(() => { setDirty(true); })
+      .catch(e => handleErrors(e)); 
+  }
+  return (
+    <PageForm addPage={addPage} />
+  );
+}
+
+export { DefaultLayout, NotFoundLayout, MainLayout, LoadingLayout, LoginLayout, AddLayout}; 

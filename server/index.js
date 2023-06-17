@@ -4,6 +4,8 @@ const express = require('express');
 const morgan = require('morgan');                                  // logging middleware
 const cors = require('cors');
 
+const { check, validationResult, } = require('express-validator'); // validation middleware
+
 const userDao = require('./dao-users'); // module for accessing the user table in the DB
 const pagesDao = require('./dao-pages');
 
@@ -112,13 +114,13 @@ app.delete('/api/sessions/current', (req, res) => {
 
 /*** Pages APIs ***/
 
-// 1. Retrieve the list of all the available pages.
+// Retrieve the list of all the available pages.
 // GET /api/pages
 
 app.get('/api/pages',
   (req, res) => {
     
-    pagesDao.listPages()
+    pagesDao.listPages(req.query.filter)
       .then(pages => res.json(pages))
       .catch((err) => res.status(500).json(err)); // always return a json and an error message
   }
@@ -129,3 +131,24 @@ app.get('/api/pages',
 app.listen(port, () => {
   console.log(`Server listening at http://localhost:${port}`);
 });
+
+// Delete an existing page, given its “id”
+// DELETE /api/pages/<id>
+// Given a page id, this route deletes the associated page from the list.
+
+app.delete('/api/pages/:id',
+  isLoggedIn,
+  [ check('id').isInt() ],
+  async (req, res) => {
+    try {
+      // NOTE: if there is no page with the specified id, the delete operation is considered successful.
+      const result = await pagesDao.deletePage(req.params.id);
+      if (result == null)
+        return res.status(200).json({}); 
+      else
+        return res.status(404).json(result);
+    } catch (err) {
+      res.status(503).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
+    }
+  }
+);

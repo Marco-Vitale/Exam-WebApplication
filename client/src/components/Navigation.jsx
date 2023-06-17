@@ -20,6 +20,12 @@ const Navigation = (props) => {
             </Navbar.Brand>
         </Link>
         
+        <Link to="backoffice">
+            <Navbar.Brand>
+                BackOffice
+            </Navbar.Brand>
+        </Link>
+
         <Nav className="ml-md-auto">
           <Navbar.Text className="mx-2">
             {(props.user && props.user.name && props.user.role) ? `Welcome, ${props.user.name}, Role: ${props.user.role}!` : "Welcome anonymous!"}
