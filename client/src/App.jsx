@@ -82,7 +82,6 @@ function App() {
     setLoggedIn(false);
     // clean up everything
     setUser(null);
-    setFilms([]);
   };
 
   return (
