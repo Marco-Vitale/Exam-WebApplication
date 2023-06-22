@@ -126,11 +126,85 @@ app.get('/api/pages',
   }
 );
 
+// 2. Retrieve a page, given its “id”.
+// GET /api/pages/<id>
+// Given a page id, this route returns the associated page
 
-// activate the server
-app.listen(port, () => {
-  console.log(`Server listening at http://localhost:${port}`);
-});
+app.get('/api/pages/:id',
+  [ check('id').isInt({min: 1}) ],    // check: is the id a positive integer?
+  async (req, res) => {
+    try {
+      const result = await pagesDao.getPage(req.params.id);
+      if (result.error)
+        res.status(404).json(result);
+      else
+        // NOTE: "invalid dates" (i.e., missing dates) are set to null during JSON serialization
+        res.json(result);
+    } catch (err) {
+      res.status(500).end();
+    }
+  }
+);
+
+app.get('/api/pages/blocks/:id',
+  [ check('id').isInt({min: 1}) ],    // check: is the id a positive integer?
+  async (req, res) => {
+    try {
+      const result = await pagesDao.getBlocks(req.params.id);
+      if (result.error)
+        res.status(404).json(result);
+      else
+        // NOTE: "invalid dates" (i.e., missing dates) are set to null during JSON serialization
+        res.json(result);
+    } catch (err) {
+      res.status(500).end();
+    }
+  }
+);
+
+//Create a new page, by providing all relevant information.
+// POST /api/pages
+
+app.post('/api/pages',
+  isLoggedIn,
+  [
+    check('title').isLength({min: 1, max:160}),
+    // only date (first ten chars) and valid ISO
+    check('publicationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).optional({checkFalsy: true}),
+    check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true})  
+  ],
+  async (req, res) => {
+    /*
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+    */
+
+    const page = {
+      title: req.body.title,
+      author: req.user.name,
+      creationDate: req.body.creationDate,
+      publicationDate: req.body.publicationDate
+    };
+
+    const blocks = req.body.blocks
+
+    try {
+      const result1 = await pagesDao.createPage(page); // NOTE: createPage returns the new created object
+      let position = 1;
+      blocks.forEach(async (block) => {
+        block.pageid = result1.id
+        block.position = position
+        position++
+        const result2 = await pagesDao.createBlock(block)
+      })
+      res.json(result1);
+    } catch (err) {
+      res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
+    }
+  }
+);
 
 // Delete an existing page, given its “id”
 // DELETE /api/pages/<id>
@@ -143,8 +217,14 @@ app.delete('/api/pages/:id',
     try {
       // NOTE: if there is no page with the specified id, the delete operation is considered successful.
       const result = await pagesDao.deletePage(req.params.id);
-      if (result == null)
-        return res.status(200).json({}); 
+      if (result == null){
+        const result2 = await pagesDao.deletePageBlocks(req.params.id)
+        if(result2 == null){
+          return res.status(200).json({}); 
+        }else{
+          return res.status(404).json(result2);
+        }
+      }
       else
         return res.status(404).json(result);
     } catch (err) {
@@ -152,3 +232,9 @@ app.delete('/api/pages/:id',
     }
   }
 );
+
+
+// activate the server
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port}`);
+});

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Container} from 'react-bootstrap/'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
-import { MainLayout, DefaultLayout, NotFoundLayout, LoginLayout, LoadingLayout, AddLayout } from './components/PageLayout';
+import { MainLayout, DefaultLayout, NotFoundLayout, LoginLayout, LoadingLayout, AddLayout, SinglePageLayout } from './components/PageLayout';
 import API from './API';
 import './App.css'
 
@@ -96,6 +96,7 @@ function App() {
               <Route index element={<MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn} dirty={dirty} setDirty={setDirty}/>} />
               <Route path="backoffice" element={loggedIn ? <MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn} dirty={dirty} setDirty={setDirty}/> : <Navigate replace to='/login' />} />
               <Route path="add" element={loggedIn ? <AddLayout setDirty={setDirty} /> : <Navigate replace to='/login' />} />
+              <Route path="pages/:pageid" element={<SinglePageLayout />} />
               <Route path="*" element={<NotFoundLayout />} />
             </Route>
 

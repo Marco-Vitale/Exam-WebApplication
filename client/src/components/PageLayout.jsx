@@ -5,6 +5,7 @@ import { Link, useParams, useLocation, Outlet } from 'react-router-dom';
 import API from '../API';
 import PagesTable from './PagesList';
 import PageForm from './PageForm';
+import SinglePage from './SinglePage';
 import { LoginForm } from './Auth';
 
 function DefaultLayout(props) {
@@ -107,11 +108,36 @@ function AddLayout(props) {
   const addPage = (page) => {
     API.addPage(page)
       .then(() => { setDirty(true); })
-      .catch(e => handleErrors(e)); 
+      .catch(); 
   }
   return (
     <PageForm addPage={addPage} />
   );
 }
 
-export { DefaultLayout, NotFoundLayout, MainLayout, LoadingLayout, LoginLayout, AddLayout}; 
+function SinglePageLayout(){
+
+  const { pageid } = useParams();
+  const [page, setPage] = useState(null);
+  const [blocks, setBlocks] = useState([])
+
+  useEffect(() => {
+    API.getPage(pageid)
+      .then(page => {
+        setPage(page);
+
+        API.getBlocks(pageid)
+        .then(blocks => {
+        setBlocks(blocks)
+    })
+      })
+      .catch(); 
+
+  }, [pageid]);
+
+  return (
+    (page && blocks) ? <SinglePage pageData={page} blocks={blocks} /> : <></>
+  )
+}
+
+export { DefaultLayout, NotFoundLayout, MainLayout, LoadingLayout, LoginLayout, AddLayout, SinglePageLayout}; 

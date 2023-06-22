@@ -97,9 +97,37 @@ const getPages = async (filter) => {
   })
 }
 
-  /**
- * This function deletes a film from the back-end library.
- */
+const getPage = async (pageid) => {
+  return getJson(
+      fetch(SERVER_URL + 'pages/' + pageid, { credentials: 'include' })
+  ).then( page => {
+
+      const clientPage = {
+        id: page.id,
+        title: page.title,
+        author: page.author,
+        creationDate: dayjs(page.creationDate)
+      }
+
+      if (page.publicationDate)
+        clientPage.publicationDate = dayjs(page.publicationDate);
+      return clientPage;
+    })
+}
+
+function addPage(page) {
+  return getJson(
+    fetch(SERVER_URL + "pages/", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(page) 
+    })
+  )
+}
+
   function deletePage(pageId) {
     return getJson(
       fetch(SERVER_URL + "pages/" + pageId, {
@@ -108,6 +136,26 @@ const getPages = async (filter) => {
       })
     )
   }
+
+  const getBlocks = async (pageid) => {
+
+    return getJson(
+        fetch(SERVER_URL + 'pages/blocks/' + pageid, { credentials: 'include' })
+    ).then( json => {
+      return json.map((block) => {
   
-  const API = {logIn, getUserInfo, logOut, getPages, deletePage};
+        const clientBlock = {
+          id: block.id,
+          pageid: block.pageid,
+          type: block.type,
+          content: block.content,
+          position: block.position
+        }
+
+        return clientBlock;
+      })
+    })
+  }
+  
+  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage};
   export default API;

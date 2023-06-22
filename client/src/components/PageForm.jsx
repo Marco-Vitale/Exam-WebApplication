@@ -28,6 +28,28 @@ const PageForm = (props) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    let nHeaders = 0;
+    let nOther = 0;
+
+    const page = {"title": title.trim(), "creationDate": currentDate, "publicationDate": publicationDate, "blocks": inputBlocks}
+
+    inputBlocks.forEach((x) => {
+      if(x.type === "Header"){
+        nHeaders++;
+      }else{
+        nOther++;
+      }
+    })
+
+    if(nHeaders === 0 || (nHeaders !== 0 && nOther === 0)){
+      console.log("at least 1 header and 1 other block")
+    }
+    
+    console.log(page)
+
+    props.addPage(page)
+
     /*
     // String.trim() method is used for removing leading and ending whitespaces from the title.
     const film = {"title": title.trim(), "favorite": favorite, "rating": rating, "watchDate": watchDate }
@@ -43,7 +65,7 @@ const PageForm = (props) => {
       props.addFilm(film);
     */
 
-    navigate('/');
+    navigate('/backoffice');
   }
 
   const handleAdd = (type) => {
@@ -54,6 +76,7 @@ const PageForm = (props) => {
     setInputBlocks(prevInputBlocks => {
       const updatedInputBlocks = [...prevInputBlocks];
       updatedInputBlocks[index].value = value;
+      console.log(updatedInputBlocks)
       return updatedInputBlocks;
     });
   };
@@ -128,11 +151,12 @@ const PageForm = (props) => {
           ) : (
             <>
           <Form.Label>Image</Form.Label>
-            <Form.Select aria-label="Default select example" onChange={event => handleInputGroupChange(index, event.target.value)}>
+            <Form.Select required={true} aria-label="Default select example" onChange={event => handleInputGroupChange(index, event.target.value)}>
+              <option value="" disabled selected>Select a logo</option>
               <option value="lakerslogo.png">Lakers logo</option>
-              <option value="bullslogo.pns">Bulls logo</option>
-              <option value="heatlogo.pns">Heat logo</option>
-              <option value="warriorslogo.pns">Warriors logo</option>
+              <option value="bullslogo.png">Bulls logo</option>
+              <option value="heatlogo.png">Heat logo</option>
+              <option value="warriorslogo.png">Warriors logo</option>
             </Form.Select>
           </>
           )}

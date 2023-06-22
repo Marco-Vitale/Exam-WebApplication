@@ -4,7 +4,6 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import { Table, Form, Button } from 'react-bootstrap/'
 import { Link, useLocation } from 'react-router-dom';
 
-
 /*
 <colgroup>
             <col style={{ width: '20%' }} />
@@ -56,7 +55,7 @@ function PagesTable(props) {
       <tr>
         <td>
           <p>
-            {props.pageData.title}
+            <Link to={`/pages/${props.pageData.id}`}>{props.pageData.title}</Link>
           </p>
         </td>
         <td>
