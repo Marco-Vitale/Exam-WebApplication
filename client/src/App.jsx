@@ -96,7 +96,7 @@ function App() {
               <Route index element={<MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn} dirty={dirty} setDirty={setDirty}/>} />
               <Route path="backoffice" element={loggedIn ? <MainLayout pages={pages} setPages={setPages} user={user} loggedIn={loggedIn} dirty={dirty} setDirty={setDirty}/> : <Navigate replace to='/login' />} />
               <Route path="add" element={loggedIn ? <AddLayout setDirty={setDirty} /> : <Navigate replace to='/login' />} />
-              <Route path="edit/:pageid" element={loggedIn ? <EditLayout pages={pages} setDirty={setDirty} /> : <Navigate replace to='/login' />} />
+              <Route path="edit/:pageid" element={loggedIn ? <EditLayout pages={pages} setDirty={setDirty} user={user}/> : <Navigate replace to='/login' />} />
               <Route path="pages/:pageid" element={<SinglePageLayout />} />
               <Route path="*" element={<NotFoundLayout />} />
             </Route>

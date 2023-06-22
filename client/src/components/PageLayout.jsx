@@ -122,23 +122,6 @@ function EditLayout(props) {
 
   const { pageid } = useParams();
   const [page, setPage] = useState(null);
-  //const [blocks, setBlocks] = useState(null)
-
-  /*
-  useEffect(() => {
-    API.getPage(pageid)
-      .then(page => {
-        setPage(page);
-
-        API.getBlocks(pageid)
-        .then(blocks => {
-        setBlocks(blocks)
-    })
-      })
-      .catch(); 
-
-  }, [pageid]);
-  */
 
   useEffect(() => {
     API.getPage(pageid)
@@ -156,7 +139,7 @@ function EditLayout(props) {
   }
 
   return (
-    page ? <PageForm page={page} editPage={editPage} pageid={pageid}/> : <></>
+    page ? <PageForm page={page} editPage={editPage} pageid={pageid} user={props.user}/> : <></>
   );
     //    (page && blocks) ? <PageForm page={page} blocks={blocks} editPage={editPage} /> : <></>
 }

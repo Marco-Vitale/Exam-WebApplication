@@ -175,6 +175,14 @@ function addPage(page) {
       })
     )
   }
+
+  const getUsers = async () => {
+
+    return getJson(
+        fetch(SERVER_URL + 'users/', { credentials: 'include' })
+    )
+    
+  }
   
-  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage, updatePage};
+  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage, updatePage, getUsers};
   export default API;

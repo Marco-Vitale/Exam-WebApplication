@@ -16,7 +16,9 @@ const PageForm = (props) => {
 
   const [inputBlocks, setInputBlocks] = useState([]);  
   const [title, setTitle] = useState(props.page ? props.page.title : '');
+  const [author, setAuthor] = useState((props.user && props.page) ? props.page.author : '')
   const [publicationDate, setPublicationDate] = useState((props.page && props.page.publicationDate) ? props.page.publicationDate.format('YYYY-MM-DD') : '');
+  const [users, setUsers] = useState([]);
 
   // useNavigate hook is necessary to change page
   const navigate = useNavigate();
@@ -30,7 +32,7 @@ const PageForm = (props) => {
 
   const currentDate = dayjs().format('YYYY-MM-DD');
 
-  console.log(inputBlocks)
+  console.log(users)
 
   const addflag = location.pathname === "/add"
 
@@ -42,7 +44,15 @@ const PageForm = (props) => {
         setInputBlocks(blocks);
       }
 
+      const getUsers = async () => {
+        if(props.user && props.user.role === "Admin"){
+          const userlist = await API.getUsers()
+          setUsers(userlist)
+        }
+      }
+      
       getBlocks();
+      getUsers();
 
     },[])
 
@@ -54,7 +64,7 @@ const PageForm = (props) => {
     let nHeaders = 0;
     let nOther = 0;
 
-    const page = {"title": title.trim(), "creationDate": currentDate, "publicationDate": publicationDate, "blocks": inputBlocks}
+    const page = {"title": title.trim(), "creationDate": currentDate, "publicationDate": publicationDate, "author": author, "blocks": inputBlocks}
 
     inputBlocks.forEach((x) => {
       if(x.type === "Header"){
@@ -136,6 +146,21 @@ const PageForm = (props) => {
         <Form.Label>Publication Date</Form.Label>
         <Form.Control type="date" min={currentDate} value={publicationDate} onChange={event => setPublicationDate(event.target.value) }/>
       </Form.Group>
+
+      {
+      (props.user && props.user.role === "Admin") ? (
+        <Form.Group controlId="authorSelect" classname="mb-3">
+          <Form.Label>Author</Form.Label>
+          <Form.Control as="select" value={author} onChange={event => setAuthor(event.target.value)}>
+            {users.map((user) => (
+              <option value={user}>{user}</option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+      ) : (
+        <></>
+      )
+      }
 
       {inputBlocks.map((inputValue, index) => (
         <Form.Group className="mb-3" key={index}>

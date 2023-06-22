@@ -49,3 +49,17 @@ exports.getUser = (email, password) => {
     });
   });
 };
+
+exports.listUsers = () => {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT name FROM users';
+    db.all(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        const names = rows.map(row => row.name);
+        resolve(names);
+      }
+    });
+  });
+};

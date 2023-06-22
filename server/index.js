@@ -112,6 +112,15 @@ app.delete('/api/sessions/current', (req, res) => {
   });
 });
 
+app.get('/api/users',
+  (req, res) => {
+    
+    userDao.listUsers()
+      .then(users => res.json(users))
+      .catch((err) => res.status(500).json(err)); // always return a json and an error message
+  }
+);
+
 /*** Pages APIs ***/
 
 // Retrieve the list of all the available pages.
@@ -222,7 +231,7 @@ app.put('/api/pages/:pageid',
     const page = {
       id: req.params.pageid,
       title: req.body.title,
-      author: req.user.name,
+      author: req.body.author,
       creationDate: req.body.creationDate,
       publicationDate: req.body.publicationDate
     };
