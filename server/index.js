@@ -206,6 +206,48 @@ app.post('/api/pages',
   }
 );
 
+
+app.put('/api/pages/:pageid',
+  isLoggedIn,
+  [
+    check('title').isLength({min: 1, max:160}),
+    // only date (first ten chars) and valid ISO
+    check('publicationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).optional({checkFalsy: true}),
+    check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true})  
+  ],
+  async (req, res) => {
+
+    //! ATTENZIONE ALL'AUTORE
+
+    const page = {
+      id: req.params.pageid,
+      title: req.body.title,
+      author: req.user.name,
+      creationDate: req.body.creationDate,
+      publicationDate: req.body.publicationDate
+    };
+
+    const blocks = req.body.blocks
+    
+    try {
+      const result1 = await pagesDao.updatePage(page.id,page); 
+      await pagesDao.deletePageBlocks(page.id)
+
+      let position = 1;
+      blocks.forEach(async (block) => {
+        block.pageid = page.id
+        block.position = position
+        position++
+        const result2 = await pagesDao.createBlock(block)
+      })
+      res.json(result1);
+    } catch (err) {
+      res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
+    }
+    
+  }
+);
+
 // Delete an existing page, given its “id”
 // DELETE /api/pages/<id>
 // Given a page id, this route deletes the associated page from the list.

@@ -56,7 +56,7 @@ exports.createBlock = (block) => {
 
   return new Promise((resolve, reject) => {
     const sql = 'INSERT INTO blocks (pageid, type, content, position) VALUES(?, ?, ?, ?)';
-    db.run(sql, [block.pageid, block.type, block.value, block.position], function (err) {
+    db.run(sql, [block.pageid, block.type, block.content, block.position], function (err) {
       if (err) {
         reject(err);
       }
@@ -140,3 +140,25 @@ exports.deletePageBlocks = (id) => {
     });
   });
 }
+
+exports.updatePage = async (id, page) => {
+  
+  if (page.publicationDate == "")
+    page.publicationDate = null;
+
+  return new Promise(async (resolve, reject) => {
+    const sql = 'UPDATE pages SET title=?, author=?, creation_date=?, publication_date=? WHERE id=?';
+
+     db.run(sql, [page.title, page.author, page.creationDate, page.publicationDate, id], function (err) {
+      if (err) {
+        reject(err);
+      }
+      if (this.changes !== 1) {
+        resolve({ error: 'No page was updated.' });
+      } else {
+        resolve(exports.getPage(id)); 
+      }
+    });
+
+  });
+};

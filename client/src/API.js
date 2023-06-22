@@ -156,6 +156,25 @@ function addPage(page) {
       })
     })
   }
+
+  function updatePage(page,pageid) {
+    /*
+    if (film && film.watchDate && (film.watchDate instanceof dayjs))
+        film.watchDate = film.watchDate.format("YYYY-MM-DD");
+
+    */
+
+    return getJson(
+      fetch(SERVER_URL + "pages/" + pageid, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(page) // dayjs date is serialized correctly by the .toJSON method override
+      })
+    )
+  }
   
-  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage};
+  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage, updatePage};
   export default API;

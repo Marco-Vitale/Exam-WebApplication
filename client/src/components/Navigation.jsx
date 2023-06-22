@@ -14,9 +14,13 @@ const Navigation = (props) => {
 
   return (
     <Navbar bg="success" variant="dark" fixed="top" className="navbar-padding justify-content-between" expand="lg">
+        <Navbar.Text className="mx-2">
+           CMSmall
+        </Navbar.Text>
+
         <Link to="/">
             <Navbar.Brand>
-                CMSmall
+                FrontOffice
             </Navbar.Brand>
         </Link>
         
@@ -39,9 +43,3 @@ const Navigation = (props) => {
 }
 
 export { Navigation };
-
-/*
-
-
-
-*/

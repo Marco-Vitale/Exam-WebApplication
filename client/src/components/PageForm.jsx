@@ -1,8 +1,10 @@
 import dayjs from 'dayjs';
 
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Form, Button, Table} from 'react-bootstrap';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
+import API from '../API';
+
 
 const PageForm = (props) => {
   /*
@@ -20,11 +22,31 @@ const PageForm = (props) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // if the page is saved (eventually modified) we return to the list of all films, 
+  const { pageid } = useParams();
+
+  // if the page is saved (eventually modified) we return to the FrontOffice, 
   // otherwise, if cancel is pressed, we go back to the previous location (given by the location state)
   const nextpage = location.state?.nextpage || '/';
 
   const currentDate = dayjs().format('YYYY-MM-DD');
+
+  console.log(inputBlocks)
+
+  const addflag = location.pathname === "/add"
+
+  if(!addflag){
+
+    useEffect(() => {
+      const getBlocks = async () => {
+        const blocks = await API.getBlocks(pageid);
+        setInputBlocks(blocks);
+      }
+
+      getBlocks();
+
+    },[])
+
+  }
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -44,39 +66,26 @@ const PageForm = (props) => {
 
     if(nHeaders === 0 || (nHeaders !== 0 && nOther === 0)){
       console.log("at least 1 header and 1 other block")
+    }else{
+      if(props.page){
+        console.log(page)
+        props.editPage(page)
+      }else{
+        props.addPage(page)
+      }
     }
-    
-    console.log(page)
-
-    props.addPage(page)
-
-    /*
-    // String.trim() method is used for removing leading and ending whitespaces from the title.
-    const film = {"title": title.trim(), "favorite": favorite, "rating": rating, "watchDate": watchDate }
-    
-    /* In this solution validations are executed through HTML.
-       If you prefer JavaScript validations, this is the right place for coding them. 
-
-    if(props.film) {
-      film.id = props.film.id;
-      props.editFilm(film);
-    }
-    else
-      props.addFilm(film);
-    */
 
     navigate('/backoffice');
   }
 
   const handleAdd = (type) => {
-    setInputBlocks(prevInputBlocks => [...prevInputBlocks, {type: type, value: ''}]);
+    setInputBlocks(prevInputBlocks => [...prevInputBlocks, {type: type, content: ''}]);
   };
 
   const handleInputGroupChange = (index, value) => {
     setInputBlocks(prevInputBlocks => {
       const updatedInputBlocks = [...prevInputBlocks];
-      updatedInputBlocks[index].value = value;
-      console.log(updatedInputBlocks)
+      updatedInputBlocks[index].content = value;
       return updatedInputBlocks;
     });
   };
@@ -135,7 +144,7 @@ const PageForm = (props) => {
           <Form.Label>Header</Form.Label>
           <Form.Control
             type="text"
-            value={inputValue.value}
+            value={inputValue.content}
             onChange={event => handleInputGroupChange(index, event.target.value)}
           />
           </>) : inputValue.type === "Paragraph" ? (
@@ -144,14 +153,14 @@ const PageForm = (props) => {
           <Form.Control
             as="textarea"
             rows={3}
-            value={inputValue.value}
+            value={inputValue.content}
             onChange={event => handleInputGroupChange(index, event.target.value)}
           />
           </>
           ) : (
             <>
           <Form.Label>Image</Form.Label>
-            <Form.Select required={true} aria-label="Default select example" onChange={event => handleInputGroupChange(index, event.target.value)}>
+            <Form.Select required={true} value={inputValue.content} aria-label="Default select example" onChange={event => handleInputGroupChange(index, event.target.value)}>
               <option value="" disabled selected>Select a logo</option>
               <option value="lakerslogo.png">Lakers logo</option>
               <option value="bullslogo.png">Bulls logo</option>

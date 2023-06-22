@@ -115,6 +115,52 @@ function AddLayout(props) {
   );
 }
 
+function EditLayout(props) {
+
+  const setDirty = props.setDirty;
+  //const {handleErrors} = useContext(MessageContext);
+
+  const { pageid } = useParams();
+  const [page, setPage] = useState(null);
+  //const [blocks, setBlocks] = useState(null)
+
+  /*
+  useEffect(() => {
+    API.getPage(pageid)
+      .then(page => {
+        setPage(page);
+
+        API.getBlocks(pageid)
+        .then(blocks => {
+        setBlocks(blocks)
+    })
+      })
+      .catch(); 
+
+  }, [pageid]);
+  */
+
+  useEffect(() => {
+    API.getPage(pageid)
+      .then(page => {
+        setPage(page);
+      })
+      .catch(); 
+
+  }, [pageid]);
+
+  const editPage = (page) => {
+    API.updatePage(page, pageid)
+      .then(() => { setDirty(true); })
+      .catch(); 
+  }
+
+  return (
+    page ? <PageForm page={page} editPage={editPage} pageid={pageid}/> : <></>
+  );
+    //    (page && blocks) ? <PageForm page={page} blocks={blocks} editPage={editPage} /> : <></>
+}
+
 function SinglePageLayout(){
 
   const { pageid } = useParams();
@@ -140,4 +186,4 @@ function SinglePageLayout(){
   )
 }
 
-export { DefaultLayout, NotFoundLayout, MainLayout, LoadingLayout, LoginLayout, AddLayout, SinglePageLayout}; 
+export { DefaultLayout, NotFoundLayout, MainLayout, LoadingLayout, LoginLayout, AddLayout, SinglePageLayout, EditLayout}; 
