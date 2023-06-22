@@ -177,12 +177,31 @@ function addPage(page) {
   }
 
   const getUsers = async () => {
-
     return getJson(
         fetch(SERVER_URL + 'users/', { credentials: 'include' })
     )
     
   }
+
+  const getTitle = async () => {
+    return getJson(
+        fetch(SERVER_URL + 'title/', { credentials: 'include' })
+    )
+    
+  }
+
+  const updateTitle = async (title) => {
+    return getJson(
+      fetch(SERVER_URL + "title/", {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ title: title })
+      })
+    )
+  }
   
-  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage, updatePage, getUsers};
+  const API = {logIn, getUserInfo, logOut, getPages, getPage, getBlocks, deletePage, addPage, updatePage, getUsers, getTitle, updateTitle};
   export default API;

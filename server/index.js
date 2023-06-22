@@ -112,6 +112,63 @@ app.delete('/api/sessions/current', (req, res) => {
   });
 });
 
+
+app.get('/api/title',
+  (req, res) => {
+    userDao.getTitle()
+      .then(title => res.json(title))
+      .catch((err) => res.status(500).json(err)); // always return a json and an error message
+  }
+);
+
+app.put('/api/title',
+  isLoggedIn,
+  async (req, res) => {
+
+    const title = req.body.title
+    console.log(title)
+    
+    try {
+      const result = await userDao.updateTitle(title); 
+    
+      res.json(title);
+
+    } catch (err) {
+      res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
+    }
+    
+  }
+);
+
+// Delete an existing page, given its “id”
+// DELETE /api/pages/<id>
+// Given a page id, this route deletes the associated page from the list.
+
+app.delete('/api/pages/:id',
+  isLoggedIn,
+  [ check('id').isInt() ],
+  async (req, res) => {
+    try {
+      // NOTE: if there is no page with the specified id, the delete operation is considered successful.
+      const result = await pagesDao.deletePage(req.params.id);
+      if (result == null){
+        const result2 = await pagesDao.deletePageBlocks(req.params.id)
+        if(result2 == null){
+          return res.status(200).json({}); 
+        }else{
+          return res.status(404).json(result2);
+        }
+      }
+      else
+        return res.status(404).json(result);
+    } catch (err) {
+      res.status(503).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
+    }
+  }
+);
+
+
+
 app.get('/api/users',
   (req, res) => {
     
@@ -225,8 +282,6 @@ app.put('/api/pages/:pageid',
     check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true})  
   ],
   async (req, res) => {
-
-    //! ATTENZIONE ALL'AUTORE
 
     const page = {
       id: req.params.pageid,

@@ -63,3 +63,33 @@ exports.listUsers = () => {
     });
   });
 };
+
+
+exports.getTitle = () => {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT title FROM website';
+    db.get(sql, [], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row.title);
+      }
+    });
+  });
+};
+
+exports.updateTitle = (title) => {
+  return new Promise((resolve, reject) => {
+    const sql = 'UPDATE website SET title=? WHERE id=1';
+
+    db.get(sql, [title], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+};
+
+

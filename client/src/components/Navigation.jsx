@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Navbar, Nav, Form } from 'react-bootstrap';
+import API from '../API';
+import { Navbar, Nav, Form, Modal} from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { LogoutButton, LoginButton } from './Auth';
-import { Container} from 'react-bootstrap/'
+import { Button } from 'react-bootstrap/'
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navigation = (props) => {
@@ -12,11 +13,64 @@ const Navigation = (props) => {
     event.preventDefault();
   }
 
+  const [showPop, setShowPop] = useState(false);
+  const [title, setTitle] = useState("");
+
+  const handleClick = () => {
+    setShowPop(true);
+  };
+
+  const handleClose = () => {
+    setShowPop(false);
+  };
+
+  const handleUpdate = async ()  => {
+    setShowPop(false)
+    await API.updateTitle(title);
+  }
+
+  useEffect(() => {
+    const getTitle = async () => {
+      const t = await API.getTitle()
+      setTitle(t);
+    }
+
+    getTitle();
+  },[])
+
   return (
     <Navbar bg="success" variant="dark" fixed="top" className="navbar-padding justify-content-between" expand="lg">
-        <Navbar.Text className="mx-2">
-           CMSmall
-        </Navbar.Text>
+        <Nav className="ml-md-auto">
+          <Navbar.Text className="mx-2">
+          {`${title}`}
+          </Navbar.Text>
+          {
+            (props.user && props.user.role === "Admin") ? (
+              <Button className="btn btn-success" onClick={handleClick}>
+                <i className="bi bi-pencil"></i>
+              </Button>
+            ) : (
+              <></>
+            )
+          }
+        </Nav>
+
+        <Modal show={showPop} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Change the name of the website!</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <input type="text" value={title} onChange={(event) => setTitle(event.target.value)}/>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleUpdate}>
+              Save
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
         <Link to="/">
             <Navbar.Brand>
