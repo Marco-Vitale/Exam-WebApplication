@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 
 import API from '../API';
 import { Navbar, Nav, Form, Modal} from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { LogoutButton, LoginButton } from './Auth';
 import { Button } from 'react-bootstrap/'
+import MessageContext from '../messageCtx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navigation = (props) => {
@@ -16,6 +17,8 @@ const Navigation = (props) => {
   const [showPop, setShowPop] = useState(false);
   const [title, setTitle] = useState("");
 
+  const {handleErrors} = useContext(MessageContext);
+
   const handleClick = () => {
     setShowPop(true);
   };
@@ -26,7 +29,11 @@ const Navigation = (props) => {
 
   const handleUpdate = async ()  => {
     setShowPop(false)
+    try{
     await API.updateTitle(title);
+    }catch(err){
+      handleErrors(err);
+    }
   }
 
   useEffect(() => {

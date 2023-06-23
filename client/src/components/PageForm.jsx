@@ -1,24 +1,21 @@
 import dayjs from 'dayjs';
 
 import {useEffect, useState} from 'react';
-import {Form, Button, Table} from 'react-bootstrap';
+import {Form, Button, Table, Alert} from 'react-bootstrap';
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom';
 import API from '../API';
 
 
 const PageForm = (props) => {
-  /*
-   * Creating a state for each parameter of the page.
-   * There are two possible cases: 
-   * - if we are creating a new page, the form is initialized with the default values.
-   * - if we are editing a page, the form is pre-filled with the previous values.
-   */
 
   const [inputBlocks, setInputBlocks] = useState([]);  
   const [title, setTitle] = useState(props.page ? props.page.title : '');
   const [author, setAuthor] = useState((props.user && props.page) ? props.page.author : '')
   const [publicationDate, setPublicationDate] = useState((props.page && props.page.publicationDate) ? props.page.publicationDate.format('YYYY-MM-DD') : '');
   const [users, setUsers] = useState([]);
+
+  const [show, setShow] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // useNavigate hook is necessary to change page
   const navigate = useNavigate();
@@ -28,13 +25,15 @@ const PageForm = (props) => {
 
   // if the page is saved (eventually modified) we return to the FrontOffice, 
   // otherwise, if cancel is pressed, we go back to the previous location (given by the location state)
+  //if the value is undefined / is assigned 
+
   const nextpage = location.state?.nextpage || '/';
 
   const currentDate = dayjs().format('YYYY-MM-DD');
 
-  console.log(users)
-
   const addflag = location.pathname === "/add"
+
+  const creationD = props.page ? props.page.creationDate.format('YYYY-MM-DD') : currentDate;
 
   if(!addflag){
 
@@ -63,8 +62,15 @@ const PageForm = (props) => {
 
     let nHeaders = 0;
     let nOther = 0;
+    let flagEmpty = 0
 
-    const page = {"title": title.trim(), "creationDate": currentDate, "publicationDate": publicationDate, "author": author, "blocks": inputBlocks}
+    const page = {"title": title.trim(), "creationDate": creationD, "publicationDate": publicationDate, "author": author, "blocks": inputBlocks}
+
+    if(page.title===""){
+      setErrorMessage("Title of the page cannot be empty!");
+      setShow(true);
+      return
+    }
 
     inputBlocks.forEach((x) => {
       if(x.type === "Header"){
@@ -72,20 +78,31 @@ const PageForm = (props) => {
       }else{
         nOther++;
       }
+      
+      if(x.type !== "Image" && x.content.trim() === ""){
+        flagEmpty=1;
+      }
     })
 
+    if(flagEmpty){
+      setErrorMessage("Content of paragraph and header cannot be empty!");
+      setShow(true);
+      return
+    }
+
     if(nHeaders === 0 || (nHeaders !== 0 && nOther === 0)){
-      console.log("at least 1 header and 1 other block")
+      setErrorMessage("At least 1 header and 1 other block (Paragraph/Image) should be in the page");
+      setShow(true);
     }else{
       if(props.page){
+        page.id = props.page.id;
         console.log(page)
         props.editPage(page)
       }else{
         props.addPage(page)
       }
+      navigate('/backoffice');
     }
-
-    navigate('/backoffice');
   }
 
   const handleAdd = (type) => {
@@ -136,7 +153,13 @@ const PageForm = (props) => {
   return (
     <>
     <Form className="block-example mb-0 form-padding" onSubmit={handleSubmit}>
-
+    <Alert
+            dismissible
+            show={show}
+            onClose={() => setShow(false)}
+            variant="danger">
+            {errorMessage}
+      </Alert>
       <Form.Group className="mb-3">
         <Form.Label>Title</Form.Label>
         <Form.Control type="text" required={true} value={title} onChange={event => setTitle(event.target.value)}/>
@@ -144,16 +167,16 @@ const PageForm = (props) => {
 
       <Form.Group className="mb-3">
         <Form.Label>Publication Date</Form.Label>
-        <Form.Control type="date" min={currentDate} value={publicationDate} onChange={event => setPublicationDate(event.target.value) }/>
+        <Form.Control type="date" min={creationD} value={publicationDate} onChange={event => setPublicationDate(event.target.value) }/>
       </Form.Group>
 
       {
       (props.user && props.user.role === "Admin") ? (
-        <Form.Group controlId="authorSelect" classname="mb-3">
+        <Form.Group controlId="authorSelect" className="mb-3">
           <Form.Label>Author</Form.Label>
           <Form.Control as="select" value={author} onChange={event => setAuthor(event.target.value)}>
-            {users.map((user) => (
-              <option value={user}>{user}</option>
+            {users.map((user, index) => (
+              <option key={index} value={user}>{user}</option>
             ))}
           </Form.Control>
         </Form.Group>
@@ -169,6 +192,7 @@ const PageForm = (props) => {
           <Form.Label>Header</Form.Label>
           <Form.Control
             type="text"
+            required={true}
             value={inputValue.content}
             onChange={event => handleInputGroupChange(index, event.target.value)}
           />
@@ -177,6 +201,7 @@ const PageForm = (props) => {
           <Form.Label>Paragraph</Form.Label>
           <Form.Control
             as="textarea"
+            required={true}
             rows={3}
             value={inputValue.content}
             onChange={event => handleInputGroupChange(index, event.target.value)}
@@ -186,7 +211,7 @@ const PageForm = (props) => {
             <>
           <Form.Label>Image</Form.Label>
             <Form.Select required={true} value={inputValue.content} aria-label="Default select example" onChange={event => handleInputGroupChange(index, event.target.value)}>
-              <option value="" disabled selected>Select a logo</option>
+              <option value="" disabled>Select a logo</option>
               <option value="lakerslogo.png">Lakers logo</option>
               <option value="bullslogo.png">Bulls logo</option>
               <option value="heatlogo.png">Heat logo</option>

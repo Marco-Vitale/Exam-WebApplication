@@ -1,32 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Container} from 'react-bootstrap/'
+import { Container, Toast} from 'react-bootstrap/'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Navigation } from './components/Navigation';
 import { MainLayout, DefaultLayout, NotFoundLayout, LoginLayout, LoadingLayout, AddLayout, SinglePageLayout, EditLayout } from './components/PageLayout';
 import API from './API';
+import MessageContext from './messageCtx';
 import './App.css'
-
-/*
-
-npm install react-bootstrap
-npm install bootstrap
-npm install react-router-dom
-
-Lato server:
-
-Handling errors
-npm install express-validator
-
-Handling requests
-npm install express
-npm install morgan
-npm install cors
-
-Handling authentication
-npm install passport
-npm install passport-local
-npm install express-session
-*/
 
 function App() {
 
@@ -41,7 +20,16 @@ function App() {
 
   const [dirty, setDirty] = useState(true);
 
-  //TODO: MODIFICARE IL CATCH PER LA GESTIONE DI ERRORI
+  const [message, setMessage] = useState('');
+
+  // If an error occurs, the error message will be shown in a toast.
+  const handleErrors = (err) => {
+    let msg = '';
+    if (err.error) msg = err.error;
+    else if (String(err) === "string") msg = String(err);
+    else msg = "Unknown Error";
+    setMessage(msg); // WARN: a more complex application requires a queue of messages. In this example only last error is shown.
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -51,7 +39,7 @@ function App() {
         setUser(user);
         setLoggedIn(true); setLoading(false);
       } catch (err) {
-        console.log(err); // mostly unauthenticated user, thus set not logged in
+        handleErrors(err)
         setUser(null);
         setLoggedIn(false); setLoading(false);
       }
@@ -86,6 +74,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <MessageContext.Provider value={{ handleErrors }}>
         <Container fluid className="App">
           <Navigation logout={handleLogout} user={user} loggedIn={loggedIn} />
 
@@ -104,7 +93,12 @@ function App() {
             <Route path="/login" element={!loggedIn ? <LoginLayout login={handleLogin} /> : <Navigate replace to='/' />} />
           </Routes>
 
+          <Toast show={message !== ''} onClose={() => setMessage('')} delay={4000} autohide bg="danger">
+            <Toast.Body>{message}</Toast.Body>
+          </Toast>
+
         </Container>
+      </MessageContext.Provider>
     </BrowserRouter>
   );
 

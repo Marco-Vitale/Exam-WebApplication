@@ -7,6 +7,7 @@ import PagesTable from './PagesList';
 import PageForm from './PageForm';
 import SinglePage from './SinglePage';
 import { LoginForm } from './Auth';
+import MessageContext from '../messageCtx';
 
 function DefaultLayout(props) {
 
@@ -23,6 +24,8 @@ function MainLayout(props) {
 
   const dirty = props.dirty;
   const setDirty = props.setDirty;
+
+  const {handleErrors} = useContext(MessageContext);
 
   const location = useLocation();
   const flag = location.pathname === "/"
@@ -41,7 +44,7 @@ function MainLayout(props) {
       setDirty(false);
 
       }catch(err){
-        console.log(err)
+        handleErrors(err);
         setDirty(false);
       }
     }
@@ -62,7 +65,7 @@ function MainLayout(props) {
     <>
       <PagesTable pages={props.pages} user={props.user} loggedIn={props.loggedIn} deletePage={deletePage} />
       {!flag ?
-      <Link className="btn btn-primary btn-lg fixed-right-bottom" to="/add" state={{nextpage: location.pathname}}> &#43; </Link> : <></>}
+      <Link className="btn btn-primary mb-3" to="/add" state={{nextpage: location.pathname}}> Add a page </Link> : <></>}
     </>
   )
 }
@@ -70,7 +73,7 @@ function MainLayout(props) {
 function NotFoundLayout() {
     return(
         <>
-          <h2 className='centered'>This is not the route you are looking for!</h2>
+          <h2>This is not the route you are looking for!</h2>
           <Link to="/">
             <Button variant="primary" className='centered'>Go Home!</Button>
           </Link>
@@ -102,13 +105,13 @@ function LoginLayout(props) {
 function AddLayout(props) {
 
   const setDirty = props.setDirty;
-  //const {handleErrors} = useContext(MessageContext);
+  const {handleErrors} = useContext(MessageContext);
 
   // add a page into the list
   const addPage = (page) => {
     API.addPage(page)
       .then(() => { setDirty(true); })
-      .catch(); 
+      .catch(e => handleErrors(e)); 
   }
   return (
     <PageForm addPage={addPage} />
@@ -118,7 +121,7 @@ function AddLayout(props) {
 function EditLayout(props) {
 
   const setDirty = props.setDirty;
-  //const {handleErrors} = useContext(MessageContext);
+  const {handleErrors} = useContext(MessageContext);
 
   const { pageid } = useParams();
   const [page, setPage] = useState(null);
@@ -128,20 +131,21 @@ function EditLayout(props) {
       .then(page => {
         setPage(page);
       })
-      .catch(); 
+      .catch(e => {
+        handleErrors(e);
+      }); 
 
   }, [pageid]);
 
   const editPage = (page) => {
     API.updatePage(page, pageid)
       .then(() => { setDirty(true); })
-      .catch(); 
+      .catch(e => handleErrors(e)); 
   }
 
   return (
     page ? <PageForm page={page} editPage={editPage} pageid={pageid} user={props.user}/> : <></>
   );
-    //    (page && blocks) ? <PageForm page={page} blocks={blocks} editPage={editPage} /> : <></>
 }
 
 function SinglePageLayout(){
@@ -149,6 +153,7 @@ function SinglePageLayout(){
   const { pageid } = useParams();
   const [page, setPage] = useState(null);
   const [blocks, setBlocks] = useState([])
+  const {handleErrors} = useContext(MessageContext);
 
   useEffect(() => {
     API.getPage(pageid)
@@ -160,7 +165,7 @@ function SinglePageLayout(){
         setBlocks(blocks)
     })
       })
-      .catch(); 
+      .catch(e => handleErrors(e)); 
 
   }, [pageid]);
 

@@ -30,14 +30,14 @@ const passport = require('passport');                              // authentica
 const LocalStrategy = require('passport-local');                   // authentication strategy (username and password)
 
 /** Set up authentication strategy to search in the DB a user with a matching password.
- * The user object will contain other information extracted by the method userDao.getUser (i.e., id, username, name).
+ * The user object will contain other information extracted by the method userDao.getUseR.
  **/
 passport.use(new LocalStrategy(async function verify(username, password, callback) {
   const user = await userDao.getUser(username, password)
   if(!user)
     return callback(null, false, 'Incorrect username or password');  
     
-  return callback(null, user); // NOTE: user info in the session (all fields returned by userDao.getUser, i.e, id, username, name)
+  return callback(null, user); // NOTE: user info in the session (all fields returned by userDao.getUser, i.e, id, username, name, role)
 }));
 
 // Serializing in the session the user object given from LocalStrategy(verify).
@@ -70,6 +70,13 @@ const isLoggedIn = (req, res, next) => {
   }
   return res.status(401).json({error: 'Not authorized'});
 }
+
+/*** Utility Functions ***/
+
+// This function is used to format express-validator errors as strings
+const errorFormatter = ({ location, msg, param, value, nestedErrors }) => {
+  return `${location}[${param}]: ${msg}`;
+};
 
 /*** Users APIs ***/
 
@@ -112,21 +119,46 @@ app.delete('/api/sessions/current', (req, res) => {
   });
 });
 
+//GET api/user
+//Returns the list of the users
 
-app.get('/api/title',
+app.get('/api/users',
+  isLoggedIn,
   (req, res) => {
-    userDao.getTitle()
-      .then(title => res.json(title))
+    
+    userDao.listUsers()
+      .then(users => res.json(users))
       .catch((err) => res.status(500).json(err)); // always return a json and an error message
   }
 );
 
+/*** Title APIs ***/
+
+
+//GET api/title
+//Returns the title of the website
+app.get('/api/title',
+  (req, res) => {
+    userDao.getTitle()
+      .then(title => res.json(title))
+      .catch((err) => res.status(404).json(err)); // return a json and an error message
+  }
+);
+
+//PUT api/title
+//Updates the title of the website
 app.put('/api/title',
   isLoggedIn,
+  [check('title').isLength({min: 1, max:30}).withMessage('Title too long')],
   async (req, res) => {
 
+    // Is there any validation error?
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+
     const title = req.body.title
-    console.log(title)
     
     try {
       const result = await userDao.updateTitle(title); 
@@ -134,11 +166,13 @@ app.put('/api/title',
       res.json(title);
 
     } catch (err) {
-      res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
+      res.status(503).json({ error: `Database error during the update of the title: ${err}` }); 
     }
     
   }
 );
+
+/*** Page APIs ***/
 
 // Delete an existing page, given its “id”
 // DELETE /api/pages/<id>
@@ -146,9 +180,16 @@ app.put('/api/title',
 
 app.delete('/api/pages/:id',
   isLoggedIn,
-  [ check('id').isInt() ],
+  [ check('id').isInt({min: 1}).withMessage("Id is not an integer") ],
   async (req, res) => {
     try {
+
+      // Is there any validation error?
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+
       // NOTE: if there is no page with the specified id, the delete operation is considered successful.
       const result = await pagesDao.deletePage(req.params.id);
       if (result == null){
@@ -167,19 +208,6 @@ app.delete('/api/pages/:id',
   }
 );
 
-
-
-app.get('/api/users',
-  (req, res) => {
-    
-    userDao.listUsers()
-      .then(users => res.json(users))
-      .catch((err) => res.status(500).json(err)); // always return a json and an error message
-  }
-);
-
-/*** Pages APIs ***/
-
 // Retrieve the list of all the available pages.
 // GET /api/pages
 
@@ -187,25 +215,30 @@ app.get('/api/pages',
   (req, res) => {
     
     pagesDao.listPages(req.query.filter)
-      .then(pages => res.json(pages))
+      .then(pages => res.status(200).json(pages))
       .catch((err) => res.status(500).json(err)); // always return a json and an error message
   }
 );
 
-// 2. Retrieve a page, given its “id”.
+// Retrieve a page, given its “id”.
 // GET /api/pages/<id>
 // Given a page id, this route returns the associated page
 
 app.get('/api/pages/:id',
-  [ check('id').isInt({min: 1}) ],    // check: is the id a positive integer?
+  [ check('id').isInt({min: 1}).withMessage("Id is not an integer") ],    // check: is the id a positive integer
   async (req, res) => {
+    // Is there any validation error?
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+
     try {
       const result = await pagesDao.getPage(req.params.id);
       if (result.error)
         res.status(404).json(result);
       else
-        // NOTE: "invalid dates" (i.e., missing dates) are set to null during JSON serialization
-        res.json(result);
+        return res.status(200).json(result);
     } catch (err) {
       res.status(500).end();
     }
@@ -213,15 +246,21 @@ app.get('/api/pages/:id',
 );
 
 app.get('/api/pages/blocks/:id',
-  [ check('id').isInt({min: 1}) ],    // check: is the id a positive integer?
+  [ check('id').isInt({min: 1}).withMessage("Id is not an integer") ],    // check: is the id a positive integer
   async (req, res) => {
+    // Is there any validation error?
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+
     try {
       const result = await pagesDao.getBlocks(req.params.id);
       if (result.error)
         res.status(404).json(result);
       else
         // NOTE: "invalid dates" (i.e., missing dates) are set to null during JSON serialization
-        res.json(result);
+        return res.status(200).json(result);
     } catch (err) {
       res.status(500).end();
     }
@@ -234,18 +273,20 @@ app.get('/api/pages/blocks/:id',
 app.post('/api/pages',
   isLoggedIn,
   [
-    check('title').isLength({min: 1, max:160}),
+    check('title').isLength({min: 1, max:160}).withMessage("Title too long"),
     // only date (first ten chars) and valid ISO
-    check('publicationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).optional({checkFalsy: true}),
-    check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true})  
+    check('publicationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).optional({checkFalsy: true}).withMessage("Invalid Date"),
+    check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).withMessage("Invalid Date"),
+    check("blocks").isArray().withMessage("Invalid blocks"),
+    check("blocks.*").notEmpty().withMessage("Empty blocks"),
+    check("blocks.*.content").isString().withMessage("Error in the content of blocks")
   ],
   async (req, res) => {
-    /*
+    
     const errors = validationResult(req).formatWith(errorFormatter); // format error message
     if (!errors.isEmpty()) {
       return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
     }
-    */
 
     const page = {
       title: req.body.title,
@@ -265,23 +306,38 @@ app.post('/api/pages',
         position++
         const result2 = await pagesDao.createBlock(block)
       })
-      res.json(result1);
+      return res.status(200).json(result1);
     } catch (err) {
       res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
     }
   }
 );
 
+//Update a page, by providing all relevant information and the id.
+// PUT /api/pages/<pageid>
 
 app.put('/api/pages/:pageid',
   isLoggedIn,
   [
-    check('title').isLength({min: 1, max:160}),
+    check('title').isLength({min: 1, max:160}).withMessage("Title too long"),
     // only date (first ten chars) and valid ISO
-    check('publicationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).optional({checkFalsy: true}),
-    check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true})  
+    check('publicationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).optional({checkFalsy: true}).withMessage("Invalid Date"),
+    check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).withMessage("Invalid Date"),
+    check("blocks").isArray().withMessage("Invalid blocks"),
+    check("blocks.*").notEmpty().withMessage("Empty blocks"),
+    check("blocks.*.content").isString().withMessage("Error in the content of blocks")
   ],
   async (req, res) => {
+
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+
+    // Is the id in the body equal to the id in the url?
+    if (req.body.id !== Number(req.params.pageid)) {
+      return res.status(422).json({ error: 'URL and body id mismatch' });
+    }
 
     const page = {
       id: req.params.pageid,
@@ -304,7 +360,7 @@ app.put('/api/pages/:pageid',
         position++
         const result2 = await pagesDao.createBlock(block)
       })
-      res.json(result1);
+      res.status(200).json(result1);
     } catch (err) {
       res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
     }
@@ -318,8 +374,14 @@ app.put('/api/pages/:pageid',
 
 app.delete('/api/pages/:id',
   isLoggedIn,
-  [ check('id').isInt() ],
+  [ check('id').isInt({min: 1}).withMessage("Id is not an integer") ],
   async (req, res) => {
+
+    const errors = validationResult(req).formatWith(errorFormatter); // format error message
+    if (!errors.isEmpty()) {
+      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
+    }
+    
     try {
       // NOTE: if there is no page with the specified id, the delete operation is considered successful.
       const result = await pagesDao.deletePage(req.params.id);

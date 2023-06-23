@@ -73,7 +73,7 @@ const logIn = async (credentials) => {
   }
 
   /**
- * Getting from the server side and returning the list of pages.
+ * Getting the  the list of pages.
  */
 
 const getPages = async (filter) => {
@@ -97,6 +97,10 @@ const getPages = async (filter) => {
   })
 }
 
+ /**
+ * Getting a page given its id
+ */
+
 const getPage = async (pageid) => {
   return getJson(
       fetch(SERVER_URL + 'pages/' + pageid, { credentials: 'include' })
@@ -115,6 +119,10 @@ const getPage = async (pageid) => {
     })
 }
 
+ /**
+ * Adds a new page in the db
+ */
+
 function addPage(page) {
   return getJson(
     fetch(SERVER_URL + "pages/", {
@@ -128,6 +136,10 @@ function addPage(page) {
   )
 }
 
+ /**
+ * Delete a page given its id
+ */
+
   function deletePage(pageId) {
     return getJson(
       fetch(SERVER_URL + "pages/" + pageId, {
@@ -136,6 +148,10 @@ function addPage(page) {
       })
     )
   }
+
+   /**
+ * Retrieve the list of blocks given a pageid
+ */
 
   const getBlocks = async (pageid) => {
 
@@ -157,12 +173,11 @@ function addPage(page) {
     })
   }
 
-  function updatePage(page,pageid) {
-    /*
-    if (film && film.watchDate && (film.watchDate instanceof dayjs))
-        film.watchDate = film.watchDate.format("YYYY-MM-DD");
+/**
+ * Update a page givrn its id
+ */
 
-    */
+  function updatePage(page,pageid) {
 
     return getJson(
       fetch(SERVER_URL + "pages/" + pageid, {
@@ -171,10 +186,14 @@ function addPage(page) {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(page) // dayjs date is serialized correctly by the .toJSON method override
+        body: JSON.stringify(page) 
       })
     )
   }
+
+  /**
+ * Retrive the list of users
+ */
 
   const getUsers = async () => {
     return getJson(
@@ -183,6 +202,9 @@ function addPage(page) {
     
   }
 
+   /**
+ * Retrive the title of the website
+ */
   const getTitle = async () => {
     return getJson(
         fetch(SERVER_URL + 'title/', { credentials: 'include' })
@@ -190,6 +212,9 @@ function addPage(page) {
     
   }
 
+    /**
+ * Update the title of the website
+ */
   const updateTitle = async (title) => {
     return getJson(
       fetch(SERVER_URL + "title/", {
