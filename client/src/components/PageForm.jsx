@@ -96,7 +96,6 @@ const PageForm = (props) => {
     }else{
       if(props.page){
         page.id = props.page.id;
-        console.log(page)
         props.editPage(page)
       }else{
         props.addPage(page)

@@ -127,7 +127,7 @@ app.get('/api/users',
   (req, res) => {
     
     userDao.listUsers()
-      .then(users => res.json(users))
+      .then(users => res.status(200).json(users))
       .catch((err) => res.status(500).json(err)); // always return a json and an error message
   }
 );
@@ -140,8 +140,8 @@ app.get('/api/users',
 app.get('/api/title',
   (req, res) => {
     userDao.getTitle()
-      .then(title => res.json(title))
-      .catch((err) => res.status(404).json(err)); // return a json and an error message
+      .then(title => res.status(200).json(title))
+      .catch((err) => res.status(500).json(err)); // return a json and an error message
   }
 );
 
@@ -163,50 +163,16 @@ app.put('/api/title',
     try {
       const result = await userDao.updateTitle(title); 
     
-      res.json(title);
+      res.status(200).json(title);
 
     } catch (err) {
-      res.status(503).json({ error: `Database error during the update of the title: ${err}` }); 
+      res.status(500).json({ error: `Database error during the update of the title: ${err}` }); 
     }
     
   }
 );
 
 /*** Page APIs ***/
-
-// Delete an existing page, given its “id”
-// DELETE /api/pages/<id>
-// Given a page id, this route deletes the associated page from the list.
-
-app.delete('/api/pages/:id',
-  isLoggedIn,
-  [ check('id').isInt({min: 1}).withMessage("Id is not an integer") ],
-  async (req, res) => {
-    try {
-
-      // Is there any validation error?
-    const errors = validationResult(req).formatWith(errorFormatter); // format error message
-    if (!errors.isEmpty()) {
-      return res.status(422).json({ error: errors.array().join(", ") }); // error message is a single string with all error joined together
-    }
-
-      // NOTE: if there is no page with the specified id, the delete operation is considered successful.
-      const result = await pagesDao.deletePage(req.params.id);
-      if (result == null){
-        const result2 = await pagesDao.deletePageBlocks(req.params.id)
-        if(result2 == null){
-          return res.status(200).json({}); 
-        }else{
-          return res.status(404).json(result2);
-        }
-      }
-      else
-        return res.status(404).json(result);
-    } catch (err) {
-      res.status(503).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
-    }
-  }
-);
 
 // Retrieve the list of all the available pages.
 // GET /api/pages
@@ -306,9 +272,9 @@ app.post('/api/pages',
         position++
         const result2 = await pagesDao.createBlock(block)
       })
-      return res.status(200).json(result1);
+      return res.status(201).json(result1);
     } catch (err) {
-      res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
+      res.status(500).json({ error: `Database error during the creation of new page: ${err}` }); 
     }
   }
 );
@@ -362,7 +328,7 @@ app.put('/api/pages/:pageid',
       })
       res.status(200).json(result1);
     } catch (err) {
-      res.status(503).json({ error: `Database error during the creation of new page: ${err}` }); 
+      res.status(500).json({ error: `Database error during the creation of new page: ${err}` }); 
     }
     
   }
@@ -396,7 +362,7 @@ app.delete('/api/pages/:id',
       else
         return res.status(404).json(result);
     } catch (err) {
-      res.status(503).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
+      res.status(500).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
     }
   }
 );

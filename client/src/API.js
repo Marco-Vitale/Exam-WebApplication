@@ -178,7 +178,6 @@ function addPage(page) {
  */
 
   function updatePage(page,pageid) {
-
     return getJson(
       fetch(SERVER_URL + "pages/" + pageid, {
         method: 'PUT',
