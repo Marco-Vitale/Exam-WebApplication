@@ -125,6 +125,10 @@ app.delete('/api/sessions/current', (req, res) => {
 app.get('/api/users',
   isLoggedIn,
   (req, res) => {
+
+    if(req.user.role!=="Admin"){
+      return res.status(401).json({error: 'Not authorized'});
+    }
     
     userDao.listUsers()
       .then(users => res.status(200).json(users))
@@ -151,6 +155,10 @@ app.put('/api/title',
   isLoggedIn,
   [check('title').isLength({min: 1, max:30}).withMessage('Title too long')],
   async (req, res) => {
+
+    if(req.user.role!=="Admin"){
+      return res.status(401).json({error: 'Not authorized'});
+    }
 
     // Is there any validation error?
     const errors = validationResult(req).formatWith(errorFormatter); // format error message
@@ -179,6 +187,12 @@ app.put('/api/title',
 
 app.get('/api/pages',
   (req, res) => {
+
+    if(req.query.filter==="all"){
+      if(!req.user){
+        return res.status(401).json({error: 'Not authorized'});
+      }
+    }
     
     pagesDao.listPages(req.query.filter)
       .then(pages => res.status(200).json(pages))
@@ -211,7 +225,7 @@ app.get('/api/pages/:id',
   }
 );
 
-app.get('/api/pages/blocks/:id',
+app.get('/api/pages/:id/blocks',
   [ check('id').isInt({min: 1}).withMessage("Id is not an integer") ],    // check: is the id a positive integer
   async (req, res) => {
     // Is there any validation error?
@@ -280,9 +294,9 @@ app.post('/api/pages',
 );
 
 //Update a page, by providing all relevant information and the id.
-// PUT /api/pages/<pageid>
+// PUT /api/pages/<id>
 
-app.put('/api/pages/:pageid',
+app.put('/api/pages/:id',
   isLoggedIn,
   [
     check('title').isLength({min: 1, max:160}).withMessage("Title too long"),
@@ -301,12 +315,12 @@ app.put('/api/pages/:pageid',
     }
 
     // Is the id in the body equal to the id in the url?
-    if (req.body.id !== Number(req.params.pageid)) {
+    if (req.body.id !== Number(req.params.id)) {
       return res.status(422).json({ error: 'URL and body id mismatch' });
     }
 
     const page = {
-      id: req.params.pageid,
+      id: req.params.id,
       title: req.body.title,
       author: req.body.author,
       creationDate: req.body.creationDate,
@@ -316,6 +330,23 @@ app.put('/api/pages/:pageid',
     const blocks = req.body.blocks
     
     try {
+
+      if(req.user.role!=="Admin"){
+        const p = await pagesDao.getPage(req.params.id)
+        if (p.error){
+          return res.status(404).json(p);
+        }else{
+          if(p.author!==req.user.name){
+            // if a normal user is trying to update a page but it's not the author of that page
+            return res.status(401).json({error: 'Not authorized'});
+          }
+          if(req.body.author!==req.user.name){
+            //if a user is trying to update the author of a page for who he is the author
+            return res.status(401).json({error: 'Not authorized'});
+          }
+        }
+      }
+
       const result1 = await pagesDao.updatePage(page.id,page); 
       await pagesDao.deletePageBlocks(page.id)
 
@@ -349,18 +380,29 @@ app.delete('/api/pages/:id',
     }
     
     try {
-      // NOTE: if there is no page with the specified id, the delete operation is considered successful.
-      const result = await pagesDao.deletePage(req.params.id);
-      if (result == null){
-        const result2 = await pagesDao.deletePageBlocks(req.params.id)
-        if(result2 == null){
+
+      if(req.user.role!=="Admin"){
+        const p = await pagesDao.getPage(req.params.id)
+        if (p.error){
+          return res.status(404).json(p);
+        }else{
+          if(p.author!==req.user.name){
+            return res.status(401).json({error: 'Not authorized'});
+          }
+        }
+      }
+
+      const result2 = await pagesDao.deletePageBlocks(req.params.id)
+      if (result2 == null){
+        const result = await pagesDao.deletePage(req.params.id);
+        if(result == null){
           return res.status(200).json({}); 
         }else{
-          return res.status(404).json(result2);
+          return res.status(404).json(result);
         }
       }
       else
-        return res.status(404).json(result);
+        return res.status(404).json(result2);
     } catch (err) {
       res.status(500).json({ error: `Database error during the deletion of page ${req.params.id}: ${err} ` });
     }

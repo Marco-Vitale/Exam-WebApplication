@@ -156,7 +156,7 @@ function addPage(page) {
   const getBlocks = async (pageid) => {
 
     return getJson(
-        fetch(SERVER_URL + 'pages/blocks/' + pageid, { credentials: 'include' })
+        fetch(SERVER_URL + 'pages/' + pageid + '/blocks', { credentials: 'include' })
     ).then( json => {
       return json.map((block) => {
   
