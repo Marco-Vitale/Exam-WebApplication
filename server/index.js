@@ -260,7 +260,8 @@ app.post('/api/pages',
     check("blocks").isArray().withMessage("Invalid blocks"),
     check("blocks.*").notEmpty().withMessage("Empty blocks"),
     check("blocks.*.content").isString().withMessage("Error in the content of blocks"),
-    check("blocks.*.content").notEmpty().withMessage("Error in the content of blocks")
+    check("blocks.*.content").notEmpty().withMessage("Error in the content of blocks"),
+    check("blocks.*.type").notEmpty().withMessage("Error in the content of blocks")
   ],
   async (req, res) => {
     
@@ -332,7 +333,8 @@ app.put('/api/pages/:id',
     check("blocks").isArray().withMessage("Invalid blocks"),
     check("blocks.*").notEmpty().withMessage("Empty blocks"),
     check("blocks.*.content").isString().withMessage("Error in the content of blocks"),
-    check("blocks.*.content").notEmpty().withMessage("Error in the content of blocks")
+    check("blocks.*.content").notEmpty().withMessage("Error in the content of blocks"),
+    check("blocks.*.type").notEmpty().withMessage("Error in the content of blocks")
   ],
   async (req, res) => {
 

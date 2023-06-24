@@ -1,6 +1,6 @@
 # This file could be used for testing the API with Visual Studio Code
 
-## Execute Log In
+## Execute Log In admin
 POST http://localhost:3001/api/sessions HTTP/1.1
 content-type: application/json
 
@@ -10,10 +10,138 @@ content-type: application/json
 }
 ###
 
+## Execute Log In user
+POST http://localhost:3001/api/sessions HTTP/1.1
+content-type: application/json
+
+{
+    "username": "mario.rossi@polito.it",
+    "password": "password"
+}
+###
+
 ## Checking if user is still logged-in.
 GET http://localhost:3001/api/sessions/current HTTP/1.1
 ###
 
 ## Execute Log Out.
 DELETE http://localhost:3001/api/sessions/current HTTP/1.1
+
 ###
+
+##Get the list of names of the user in the db
+GET http://localhost:3001/api/users HTTP/1.1
+
+###
+## Get the title of the website
+GET http://localhost:3001/api/title HTTP/1.1
+###
+
+## Update the title of the website
+PUT http://localhost:3001/api/title HTTP/1.1
+content-type: application/json
+
+{
+    "title": "CMSmall"
+}
+
+###
+
+## Get all the pages
+GET http://localhost:3001/api/pages?filter=all HTTP/1.1
+
+###
+
+## Get only the published pages
+GET http://localhost:3001/api/pages?filter=published HTTP/1.1
+
+###
+
+## Get the page with id 7
+GET http://localhost:3001/api/pages/7 HTTP/1.1
+
+###
+## Create a new page
+POST http://localhost:3001/api/pages HTTP/1.1
+content-type: application/json
+
+{
+  "title":"Titolo",
+  "creationDate":"2023-06-23",
+  "publicationDate":"",
+  "author":"",
+  "blocks":[
+            {"type":"Header",
+            "content":"Nuovo header"},
+            {"type":"Image",
+            "content":"heatlogo.png"}
+            ]
+}
+
+###
+## Create a new page invalid
+POST http://localhost:3001/api/pages HTTP/1.1
+content-type: application/json
+
+{
+  "title":"Titolo",
+  "creationDate":"2023-06-23",
+  "publicationDate":"",
+  "author":"",
+  "blocks":[
+            {"type":"Image",
+            "content":"heatlogo.png"}
+            ]
+}
+
+###
+## Update a page
+PUT http://localhost:3001/api/pages/7 HTTP/1.1
+content-type: application/json
+
+{
+  "title":"Titolo",
+  "creationDate":"2023-06-23",
+  "publicationDate":"",
+  "author":"Guido",
+  "blocks":[
+            {"id":47,
+            "pageid":7,
+            "type":"Header",
+            "content":"Nuovo header modificato",
+            "position":1},
+            {"id":48,
+            "pageid":7,
+            "type":"Image",
+            "content":"heatlogo.png",
+            "position":2}
+            ],
+  "id":7
+}
+
+###
+## Update a page invalid
+PUT http://localhost:3001/api/pages/7 HTTP/1.1
+content-type: application/json
+
+{
+  "title":"Titolo",
+  "creationDate":"2023-06-23",
+  "publicationDate":"",
+  "author":"Guido",
+  "blocks":[
+            {"id":47,
+            "pageid":7,
+            "type":"Header",
+            "content":"ghgh",
+            "position":1}
+            ],
+  "id":7
+}
+###
+## Delete a page
+DELETE http://localhost:3001/api/pages/7 HTTP/1.1
+
+###
+## Get the blocks of the page with id 2
+GET http://localhost:3001/api/pages/2/blocks HTTP/1.1

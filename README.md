@@ -5,12 +5,12 @@
 ## React Client Application Routes
 
 - Route `/`: Inside of the root route we can find the front office, with all the published pages.
-- Route `backoffice`:Iinside this page we have all the available pages with the possibility to add,edit or delete them.
-- Route `add`: Here we can find the form to add a new page
-- Route `edit/:pageid`: Here we can find the form to edit the page with the corresponding pageid passed as a parameter in the route. This form is pre filled with all the available informations
+- Route `backoffice`: This is the route where we have all the available pages with the possibility to add,edit or delete them (The Backoffice).
+- Route `add`: Here we can find the form to add a new page.
+- Route `edit/:pageid`: Here we can find the form to edit the page with the corresponding pageid passed as a parameter in the route. This form is pre filled with all the available informations.
 - Route `pages/:pageid`: This is the route in which the page with the corresponding pageid passed as a parameter is shown. This route has only a visualization purpose, the user cannot perform any action inside of it. 
 - Route `*`: This route has the purpose to catch any path that has not been defined, it shows a page with a button that permits the user to come back to the root page (front office).
-- Route `/login`: This route has the purpose to show the login form
+- Route `/login`: This route has the purpose to show the login form.
 
 ## API Server
 
@@ -23,8 +23,8 @@
 
 ``` JSON
 {
-    "username": "username",
-    "password": "password"
+    "username": "guido.saracco@polito.it",
+    "password": "polito2023"
 }
 ```
 
@@ -73,7 +73,7 @@
 
 #### GET `api/users`
 
-* Description: get the list of the user in the db
+* Description: get the list of the name of the user in the db
 * Request body: _None_
 
 * Response: `200 OK` (success)
@@ -88,7 +88,7 @@
 ]
 ```
 
-* Error responses: `500 Internal Server Error` (generic error), `401 Unauthorized User` (user is not logged in)
+* Error responses: `500 Internal Server Error` (generic error), `401 Unauthorized User` (user is not logged in or is not an admin)
 
 ### Title APIs
 
@@ -124,7 +124,7 @@
 "CMSmall"
 ```
 
-* Error responses: `500 Internal Server Error` (generic error), `401 Unauthorized User` (user is not logged in), `422 Unprocessable Entity` (validation error)
+* Error responses: `500 Internal Server Error` (generic error), `401 Unauthorized User` (user is not logged in or is not an admin), `422 Unprocessable Entity` (validation error)
 
 ### Page APIs
 
@@ -154,11 +154,11 @@
   }
 ]
 ```
-* Error responses: `500 Internal Server Error` (generic error)
+* Error responses: `500 Internal Server Error` (generic error), `401 Unauthorized User` (user is not logged in and is requesting all the pages)
 
 #### GET `/api/pages/:id`
 
-* Description: get the page with the id value in the parameters
+* Description: get the page with the corresponding id passed as a parameter
 * Request body: _None_
 
 * Response: `200 OK` (success)
@@ -209,9 +209,9 @@
 ```
 * Error responses: `500 Internal Server Error` (generic error), `422 Unprocessable Entity` (validation error), `401 Unauthorized User` (user is not logged in)
 
-#### PUT `/api/pages/:pageid`
+#### PUT `/api/pages/:id`
 
-* Description: Update the page with <pageid> 
+* Description: Update the page with the corresponding id passed as a parameter
 * Request body: Object containing the new page properties and the associated blocks into an array
 
 ``` JSON
@@ -248,21 +248,21 @@
   "publicationDate": null
 }
 ```
-* Error responses: `500 Internal Server Error` (generic error), `422 Unprocessable Entity` (validation error), `401 Unauthorized User` (user is not logged in)
+* Error responses: `500 Internal Server Error` (generic error), `422 Unprocessable Entity` (validation error), `401 Unauthorized User` (user is not logged in/ normal user trying to update a page for who is not the author/ normal user trying to update the auhtor o a page), `404 Not Found` (wrong id)
 
 #### DELETE `/api/pages/:id`
 
-* Description: delete the page with the id value in the parameters
+* Description: delete the page with the corresponding id passed as a parameter
 * Request body: _None_
 
 * Response: `200 OK` (success)
 * Response body: _None_
 
-* Error responses: `500 Internal Server Error` (generic error), `422 Unprocessable Entity` (validation error), `404 Not Found` (wrong id), `401 Unauthorized User` (user is not logged in)
+* Error responses: `500 Internal Server Error` (generic error), `422 Unprocessable Entity` (validation error), `404 Not Found` (wrong id), `401 Unauthorized User` (user is not logged in or normal user trying to delete a page of another user)
 
-#### GET `/api/pages/blocks/:id`
+#### GET `/api/pages/:id/blocks`
 
-* Description: get all the blocks related to the page with id = <pageid>
+* Description: get all the blocks related to the page with the corresponding id passed as a parameter
 * Request body: _None_
 
 * Response: `200 OK` (success)
@@ -325,11 +325,20 @@
 
 ## Main React Components
 
-- `ListOfSomething` (in `List.js`): component purpose and main functionality
-- `GreatButton` (in `GreatButton.js`): component purpose and main functionality
-- ...
+- `LoginForm` (in `Auth.jsx`): contains the form to perform the login, the login button is inside of it
 
-(only _main_ components, minor ones may be skipped)
+- `Navigation` (in `Navigations.jsx`): contains the navbar that has inside of it the buttons to navigate to the backoffice or the frontoffice, the login/logout button and the website title, with the possibility to change it.
+
+- `PageForm` (in `PageForm.jsx`): contains the form in which the user can create/modify a page. Here we can find different buttons, that permit the user to add a block (header/paragraph/image). In case of an image block the user has the possibility to choose from four different images that are shown in the bottom side of the page. The save button permits to send the request after checking that the all the infos are valid. The cancel button instead navigate the user back to the backoffice. The possibility to change the author of a page is handled inside this form, after checking that the user is an Admin.
+
+- `MainLayout` (in `PageLayout.jsx`): this component has the duty to fetch from the db the list of pages, requesting all the pages or only the published, according to the URL in which is mounted (ALL if in the backoffice/ published if in the frontoffice). Those pages  and the function that request the delete of a page are then passed to the PagesTable component (later decsribed). Inside of MainLayout we can also find the button to add a new page, that redirect the user to the correct route that will render the PageForm previously described.
+
+- `EditLayout` (in `PageLayout.jsx`): this component has the duty to fetch from the db the page with the id inserted in the parameter. This page and the function that request the edit of a page are then passed to the PageForm component previously described.
+
+- `SinglePageLayout` (in `PageLayout.jsx`): this component has the duty to fetch from the db the page with the id inserted in the parameter and the related blocks. Those informations are then passed to the SinglePage component (in `SinglePage.jsx`) that will only display the blocks showing the content of the page.
+
+- `PagesTable` and `PageRow` (in `PagesList.jsx`): those two components are used together to show the pages in a table. Each page available is mapped into a PageRow where we can find all the related informations and also the buttons (if in the backoffice) that permits the user to edit or delete the page. Those buttons are disabled if the user who is logged in is not an admin and is not the author of the page.
+
 
 ## Screenshot
 
