@@ -259,7 +259,8 @@ app.post('/api/pages',
     check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).withMessage("Invalid Date"),
     check("blocks").isArray().withMessage("Invalid blocks"),
     check("blocks.*").notEmpty().withMessage("Empty blocks"),
-    check("blocks.*.content").isString().withMessage("Error in the content of blocks")
+    check("blocks.*.content").isString().withMessage("Error in the content of blocks"),
+    check("blocks.*.content").notEmpty().withMessage("Error in the content of blocks")
   ],
   async (req, res) => {
     
@@ -276,6 +277,31 @@ app.post('/api/pages',
     };
 
     const blocks = req.body.blocks
+
+    let nHeaders = 0;
+    let nOther = 0;
+    let flagEmpty = 0;
+
+    blocks.forEach((x) => {
+      if(x.type === "Header"){
+        nHeaders++;
+      }else{
+        nOther++;
+      }
+
+      if(x.type !== "Image" && x.content.trim() === ""){
+        flagEmpty=1;
+      }
+    });
+
+    if(flagEmpty){
+      return res.status(422).json({error: "Error in content of blocks"})
+    }
+
+
+    if(nHeaders === 0 || (nHeaders !== 0 && nOther === 0)){
+      return res.status(422).json({error: "Error in number of blocks"})
+    }
 
     try {
       const result1 = await pagesDao.createPage(page); // NOTE: createPage returns the new created object
@@ -305,7 +331,8 @@ app.put('/api/pages/:id',
     check('creationDate').isLength({min: 10, max: 10}).isISO8601({strict: true}).withMessage("Invalid Date"),
     check("blocks").isArray().withMessage("Invalid blocks"),
     check("blocks.*").notEmpty().withMessage("Empty blocks"),
-    check("blocks.*.content").isString().withMessage("Error in the content of blocks")
+    check("blocks.*.content").isString().withMessage("Error in the content of blocks"),
+    check("blocks.*.content").notEmpty().withMessage("Error in the content of blocks")
   ],
   async (req, res) => {
 
@@ -328,6 +355,31 @@ app.put('/api/pages/:id',
     };
 
     const blocks = req.body.blocks
+
+    let nHeaders = 0;
+    let nOther = 0;
+    let flagEmpty = 0;
+
+    blocks.forEach((x) => {
+      if(x.type === "Header"){
+        nHeaders++;
+      }else{
+        nOther++;
+      }
+
+      if(x.type !== "Image" && x.content.trim() === ""){
+        flagEmpty=1;
+      }
+    });
+
+    if(flagEmpty){
+      return res.status(422).json({error: "Error in content of blocks"})
+    }
+
+
+    if(nHeaders === 0 || (nHeaders !== 0 && nOther === 0)){
+      return res.status(422).json({error: "Error in number of blocks"})
+    }
     
     try {
 
